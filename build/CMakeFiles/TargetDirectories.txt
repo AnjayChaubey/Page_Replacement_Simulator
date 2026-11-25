@@ -1,0 +1,7 @@
+C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/CMakeFiles/edit_cache.dir
+C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/CMakeFiles/rebuild_cache.dir
+C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/backend/CMakeFiles/page_replacement_core.dir
+C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/backend/CMakeFiles/test_algorithms.dir
+C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/backend/CMakeFiles/page_replacement_server.dir
+C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/backend/CMakeFiles/edit_cache.dir
+C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/backend/CMakeFiles/rebuild_cache.dir

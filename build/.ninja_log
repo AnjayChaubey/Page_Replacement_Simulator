@@ -1,0 +1,17 @@
+# ninja log v7
+138	2027	8166931461748662	backend/CMakeFiles/page_replacement_core.dir/src/WorkloadGenerator.cpp.obj	357d780d65218f0a
+47	538	8166931811466406	build.ninja	a7fc0bc8cfa84d4a
+47	538	8166931811466406	C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/cmake_install.cmake	a7fc0bc8cfa84d4a
+47	538	8166931811466406	C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/backend/cmake_install.cmake	a7fc0bc8cfa84d4a
+139	2619	8166931813639485	backend/CMakeFiles/page_replacement_core.dir/src/WorkloadGenerator.cpp.obj	9a94eef1751da1d2
+152	10430	8166931813760920	backend/CMakeFiles/test_algorithms.dir/tests/test_algorithms.cpp.obj	94a6f0e2d1130a8b
+115	13095	8166931813395989	backend/CMakeFiles/page_replacement_core.dir/src/algorithms/SecondChance.cpp.obj	ed265efb46c30cb3
+40	13151	8166931812649284	backend/CMakeFiles/page_replacement_core.dir/src/algorithms/FIFO.cpp.obj	216179989994558b
+75	13264	8166931813255185	backend/CMakeFiles/page_replacement_core.dir/src/algorithms/LFU.cpp.obj	feab25c7cfe2d644
+63	13409	8166931812867470	backend/CMakeFiles/page_replacement_core.dir/src/algorithms/Optimal.cpp.obj	f0b6297084352186
+51	13426	8166931812758508	backend/CMakeFiles/page_replacement_core.dir/src/algorithms/LRU.cpp.obj	9b93546c2d6e7d57
+128	13818	8166931813527170	backend/CMakeFiles/page_replacement_core.dir/src/Simulator.cpp.obj	cc61184d90d461b0
+13819	14703	8166931950431506	backend/libpage_replacement_core.a	3c185d9ebdb6edf0
+14703	15558	8166931959281306	backend/test_algorithms.exe	c7e59156729ad64e
+164	74854	8166931813888909	backend/CMakeFiles/page_replacement_server.dir/src/main.cpp.obj	dc63e41c2645b925
+74859	76711	8166932560834440	backend/page_replacement_server.exe	fc33d94f45c85eb

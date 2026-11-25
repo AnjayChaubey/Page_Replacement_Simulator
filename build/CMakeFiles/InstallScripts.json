@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/cmake_install.cmake",
+		"C:/Users/gupta/OneDrive/Desktop/Page_Replacement_Simulator/build/backend/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

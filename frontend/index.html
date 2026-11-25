@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Replacement Algorithm Simulator | Operating Systems Lab</title>
+  <meta name="description" content="Interactive, academic Operating Systems Page Replacement Algorithm Simulator powered by modern C++17 backend and rich dark-mode visualization.">
+  
+  <!-- CSS Styles -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Chart.js & Lucide Icons -->
+  <script src="assets/chart.umd.min.js"></script>
+  <script src="assets/lucide.min.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">
+        <i data-lucide="cpu"></i>
+      </div>
+      <div class="logo-text">
+        <h1>PAGE REPLACEMENT</h1>
+        <span>SIMULATOR &bull; C++17</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-link active" data-target="view-dashboard">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
+      <a class="nav-link" data-target="view-simulator">
+        <i data-lucide="play-circle"></i>
+        <span>Live Simulator</span>
+      </a>
+      <a class="nav-link" data-target="view-comparison">
+        <i data-lucide="bar-chart-2"></i>
+        <span>Compare Algorithms</span>
+      </a>
+      <a class="nav-link" data-target="view-workload">
+        <i data-lucide="activity"></i>
+        <span>Workload Analysis</span>
+      </a>
+      <a class="nav-link" data-target="view-belady">
+        <i data-lucide="flask-conical"></i>
+        <span>Belady's Anomaly</span>
+      </a>
+      <a class="nav-link" data-target="view-learning">
+        <i data-lucide="book-open"></i>
+        <span>Learning Center</span>
+      </a>
+      <a class="nav-link" data-target="view-history">
+        <i data-lucide="history"></i>
+        <span>Simulation History</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="backend-status-badge">
+        <div class="status-dot online" id="backendStatusDot"></div>
+        <span id="backendStatusText">Connecting...</span>
+      </div>
+      <div>Operating Systems Lab &bull; OS Simulator</div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-content">
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" title="Toggle Navigation">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="page-title-group">
+          <h2>PAGE REPLACEMENT SIMULATOR</h2>
+          <p>Analyze, Visualize &amp; Compare Memory Management Algorithms</p>
+        </div>
+      </div>
+      <div class="top-bar-actions">
+        <button class="btn btn-secondary btn-sm" id="btnPrintSummary" title="Print Current View">
+          <i data-lucide="printer"></i> Print Summary
+        </button>
+      </div>
+    </header>
+
+    <!-- SECTION 1: DASHBOARD -->
+    <section class="view-section active" id="view-dashboard">
+      <!-- Hero Welcome Card -->
+      <div class="hero-card">
+        <div class="hero-text">
+          <h3>Welcome to the Operating Systems Page Replacement Simulator</h3>
+          <p>
+            In modern virtual memory systems, operating systems utilize paging to allow processes to execute with physical memory smaller than their address space. When a requested page is not currently in physical RAM, a <strong>Page Fault</strong> is triggered, requiring a <strong>Page Replacement Algorithm</strong> to choose a victim frame. This simulator models, animates, and mathematically benchmarks all major replacement algorithms powered directly by a native <strong>C++17</strong> calculation engine.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="btnQuickNewSim">
+              <i data-lucide="play"></i> Start New Simulation
+            </button>
+            <button class="btn btn-secondary" id="btnQuickCompare">
+              <i data-lucide="bar-chart-2"></i> Compare Algorithms
+            </button>
+            <button class="btn btn-secondary" id="btnQuickExplore">
+              <i data-lucide="book-open"></i> Explore Algorithms
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat Cards Grid -->
+      <div class="stat-cards-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrapper">
+            <i data-lucide="layers"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Total Simulations</div>
+            <div class="stat-value" id="dashTotalSims">0</div>
+          </div>
+        </div>
+        <div class="stat-card stat-accent-secondary">
+          <div class="stat-icon-wrapper">
+            <i data-lucide="hash"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Total Page References</div>
+            <div class="stat-value" id="dashTotalRefs">0</div>
+          </div>
+        </div>
+        <div class="stat-card stat-success">
+          <div class="stat-icon-wrapper">
+            <i data-lucide="award"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Best Performing Algorithm</div>
+            <div class="stat-value" id="dashBestAlgo">N/A</div>
+          </div>
+        </div>
+        <div class="stat-card stat-warning">
+          <div class="stat-icon-wrapper">
+            <i data-lucide="pie-chart"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Avg. Page Fault Rate</div>
+            <div class="stat-value" id="dashAvgFaultRate">0.0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Simulations Table Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="clock"></i> Recent Simulations
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Date &amp; Time</th>
+                <th>Algorithm</th>
+                <th>Frames</th>
+                <th>References</th>
+                <th>Page Faults</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardRecentTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                  No simulations run yet. Click "Start New Simulation" above!
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: LIVE SIMULATOR -->
+    <section class="view-section" id="view-simulator">
+      
+      <!-- Simulation Configuration Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="sliders"></i> Simulation Configuration
+          </div>
+          <span class="frame-metadata-badge" id="currentSimAlgoBadge">LRU (3 Frames)</span>
+        </div>
+
+        <div class="config-grid">
+          <div class="form-group">
+            <label class="form-label">Algorithm Selection</label>
+            <select class="form-control" id="selectAlgo">
+              <option value="FIFO">FIFO (First In First Out)</option>
+              <option value="LRU" selected>LRU (Least Recently Used)</option>
+              <option value="Optimal">Optimal (Belady's MIN)</option>
+              <option value="LFU">LFU (Least Frequently Used)</option>
+              <option value="SecondChance">Second Chance / Clock</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Number of Memory Frames</label>
+            <input type="number" class="form-control" id="inputFrames" min="1" max="64" value="3">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Workload Presets</label>
+            <select class="form-control" id="selectPreset">
+              <option value="standard" selected>Standard Benchmark (7, 0, 1, 2, ...)</option>
+              <option value="belady_classic">Belady Anomaly Classic (1, 2, 3, 4, ...)</option>
+              <option value="locality">Locality-Based Pattern</option>
+              <option value="sequential">Sequential Streaming</option>
+              <option value="repeated">Repeated Working Set</option>
+              <option value="random">Random Workload</option>
+              <option value="high_diversity">High Page Diversity</option>
+            </select>
+          </div>
+
+          <div class="form-group span-full">
+            <label class="form-label">Page Reference String (comma or space separated non-negative integers)</label>
+            <div class="input-with-button">
+              <input type="text" class="form-control" id="inputRefString" value="7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2" placeholder="e.g. 7, 0, 1, 2, 0, 3, 0, 4, 2">
+              <button class="btn btn-primary" id="btnStartSimulation">
+                <i data-lucide="play"></i> Run Simulation
+              </button>
+            </div>
+            <div class="quick-chips-row">
+              <span style="font-size: 0.78rem; color: var(--text-muted); align-self: center;">Quick Presets:</span>
+              <button type="button" class="preset-chip" data-preset="standard">Standard (7,0,1,2...)</button>
+              <button type="button" class="preset-chip" data-preset="belady_classic">Belady (1,2,3,4...)</button>
+              <button type="button" class="preset-chip" data-preset="locality">Locality (80/20)</button>
+              <button type="button" class="preset-chip" data-preset="repeated">Repeated</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Simulator Layout: Stage (Left) & Real-time Stats (Right) -->
+      <div class="simulator-layout">
+        
+        <!-- Left Stage: Tape + Stepper + Memory Visualization -->
+        <div class="stage-card card">
+          
+          <!-- Reference String Tape Strip -->
+          <div class="tape-container">
+            <div class="tape-header">
+              <span>REFERENCE STRING PROGRESS (Click any chip to jump to step)</span>
+              <span id="tapeStepIndicator" style="font-weight: 600;">Scrollable Tape</span>
+            </div>
+            <div class="tape-scroll" id="referenceTape">
+              <!-- Dynamically populated chips -->
+            </div>
+          </div>
+
+          <!-- Stepper Controls Bar -->
+          <div class="stepper-controls-bar">
+            <div class="playback-buttons">
+              <button class="btn btn-secondary btn-icon" id="btnResetSim" title="Reset to Start">
+                <i data-lucide="rotate-ccw"></i>
+              </button>
+              <button class="btn btn-secondary btn-icon" id="btnPrevStep" title="Previous Step">
+                <i data-lucide="chevron-left"></i>
+              </button>
+              <button class="btn btn-primary" id="btnPlayPause" title="Play / Pause Simulation">
+                <i data-lucide="play"></i> Resume
+              </button>
+              <button class="btn btn-secondary btn-icon" id="btnNextStep" title="Next Step">
+                <i data-lucide="chevron-right"></i>
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btnRunAll" title="Jump to Final State">
+                <i data-lucide="fast-forward"></i> Run All
+              </button>
+            </div>
+
+            <div class="speed-control-group">
+              <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 4px;">Speed:</span>
+              <button class="speed-btn" data-speed="0.5">0.5×</button>
+              <button class="speed-btn active" data-speed="1.0">1×</button>
+              <button class="speed-btn" data-speed="2.0">2×</button>
+              <button class="speed-btn" data-speed="4.0">4×</button>
+            </div>
+
+            <div class="step-counter-text" id="stepCounterDisplay">
+              Step <span>0</span> of <span>0</span>
+            </div>
+          </div>
+
+          <!-- Stepper Progress Bar -->
+          <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; margin-top: -16px;">
+            <div id="stepProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); transition: width 0.2s ease;"></div>
+          </div>
+
+          <!-- Memory Frames Visualizer Display Area -->
+          <div class="frames-display-area">
+            <div class="frames-header-status">
+              <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
+                PHYSICAL MEMORY FRAMES (RAM)
+              </div>
+              <div class="status-badge-pill idle" id="stepStatusPill">
+                READY
+              </div>
+            </div>
+
+            <!-- Frames Grid -->
+            <div class="frames-grid" id="memoryFramesGrid">
+              <!-- Dynamically populated frame blocks -->
+            </div>
+
+            <!-- Explanation Callout -->
+            <div class="step-explanation-box" id="stepExplanation">
+              Simulation loaded. Press "Resume" or click "Next Step" to trace algorithm execution frame by frame.
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Side: Cumulative Stats & Donut Chart -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="pie-chart"></i> Hit vs Fault Ratio
+              </div>
+            </div>
+            <div class="chart-container" style="min-height: 200px;">
+              <canvas id="chartHitFaultDonut"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="bar-chart"></i> Live Statistics
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                  <span style="color: var(--color-success); font-weight: 600;">Page Hits</span>
+                  <strong id="statHitsLive">0</strong>
+                </div>
+                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;">
+                  <div id="statHitProgressBar" style="width: 0%; height: 100%; background: var(--color-success); transition: width 0.3s ease;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                  <span style="color: var(--color-error); font-weight: 600;">Page Faults</span>
+                  <strong id="statFaultsLive">0</strong>
+                </div>
+                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;">
+                  <div id="statFaultProgressBar" style="width: 0%; height: 100%; background: var(--color-error); transition: width 0.3s ease;"></div>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Hit Ratio</div>
+                  <div style="font-size: 1.15rem; font-weight: 700; color: var(--color-success);" id="statHitRatioLive">0.0%</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Fault Ratio</div>
+                  <div style="font-size: 1.15rem; font-weight: 700; color: var(--color-error);" id="statFaultRatioLive">0.0%</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Replacements</div>
+                  <div style="font-size: 1.15rem; font-weight: 700;" id="statReplacementsLive">0</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Allocations</div>
+                  <div style="font-size: 1.15rem; font-weight: 700;" id="statAllocationsLive">0</div>
+                </div>
+              </div>
+
+              <div style="margin-top: 8px;">
+                <button class="btn btn-secondary btn-sm" id="btnExportSimCSV" style="width: 100%;">
+                  <i data-lucide="download"></i> Export Simulation CSV
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- SECTION 3: ALGORITHM COMPARISON MODULE -->
+    <section class="view-section" id="view-comparison">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="bar-chart-2"></i> Run Comparative Analysis Across All 5 Algorithms
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary btn-sm" id="btnExportCompCSV">
+              <i data-lucide="download"></i> Export CSV Report
+            </button>
+            <button class="btn btn-primary btn-sm" id="btnRunComparison">
+              <i data-lucide="bar-chart-2"></i> Compare All Algorithms
+            </button>
+          </div>
+        </div>
+
+        <div class="config-grid" style="margin-bottom: 20px;">
+          <div class="form-group">
+            <label class="form-label">Frames for Comparison</label>
+            <input type="number" class="form-control" id="compFrames" min="1" max="64" value="3">
+          </div>
+          <div class="form-group span-full">
+            <label class="form-label">Reference String to Compare</label>
+            <input type="text" class="form-control" id="compRefString" value="7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2">
+          </div>
+        </div>
+
+        <!-- Theoretical Note Banner -->
+        <div id="compTheoreticalNote" style="background: rgba(6, 182, 212, 0.08); border-left: 4px solid var(--accent-secondary); padding: 14px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-bottom: 20px; font-size: 0.9rem; color: #e2e8f0;">
+          Optimal (Belady's MIN) serves as an unachievable theoretical lower bound requiring non-causal future knowledge.
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Hits</th>
+                <th>Faults</th>
+                <th>Hit Ratio %</th>
+                <th>Fault Ratio %</th>
+                <th>Replacements</th>
+                <th>Free Allocations</th>
+                <th>Tie-Breaker Policy</th>
+              </tr>
+            </thead>
+            <tbody id="comparisonTableBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4 Comparison Charts Grid -->
+      <div class="charts-grid-2x2">
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="bar-chart"></i> Page Fault Comparison</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartFaultsCompare"></canvas>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="check-circle-2"></i> Page Hit Comparison</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartHitsCompare"></canvas>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="trending-down"></i> Page Fault Rate (%)</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartFaultRateCompare"></canvas>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="trending-up"></i> Hit Ratio (%)</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartHitRatioCompare"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: WORKLOAD ANALYSIS -->
+    <section class="view-section" id="view-workload">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="activity"></i> Workload Analysis &amp; Scalability Testing
+          </div>
+          <button class="btn btn-primary btn-sm" id="btnRunWorkloadAnalysis">
+            <i data-lucide="activity"></i> Run Workload Experiment
+          </button>
+        </div>
+
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">
+          Evaluate how replacement algorithms behave across distinct memory access patterns and how page faults scale as the number of allocated memory frames grows from 2 to 7.
+        </p>
+
+        <div class="config-grid">
+          <div class="form-group">
+            <label class="form-label">Workload Pattern Type</label>
+            <select class="form-control" id="selectAnalysisWorkload">
+              <option value="locality" selected>Temporal &amp; Spatial Locality (80/20 Clustering)</option>
+              <option value="sequential">Sequential Streaming (Looping Strides)</option>
+              <option value="repeated">Repeated Working Set (High Reuse)</option>
+              <option value="random">Uniform Random</option>
+              <option value="high_diversity">High Page Diversity (Broad Range)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px; background: rgba(99, 102, 241, 0.08); border-left: 4px solid var(--accent-primary); padding: 14px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.9rem; color: #e2e8f0;" id="workloadAnalysisSummary">
+          Click "Run Workload Experiment" to benchmark all 5 algorithms across frame counts 2 through 7.
+        </div>
+      </div>
+
+      <div class="charts-grid-2x2">
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="trending-down"></i> Page Faults vs Frame Count (Lower is Better)</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartWorkloadFaults"></canvas>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="trending-up"></i> Hit Ratio vs Frame Count (Higher is Better)</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartWorkloadHits"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: BELADY'S ANOMALY EXPERIMENT -->
+    <section class="view-section" id="view-belady">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="flask-conical"></i> Belady's Anomaly Laboratory
+          </div>
+          <button class="btn btn-primary btn-sm" id="btnRunBelady">
+            <i data-lucide="flask-conical"></i> Run Anomaly Test
+          </button>
+        </div>
+
+        <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px;">
+          <strong>Belady's Anomaly</strong> is the counter-intuitive phenomenon wherein increasing the physical memory allocated to a process (more frames) results in an <strong>INCREASE</strong> in the number of page faults!
+          <br>
+          This anomaly can occur in non-stack algorithms like <strong>FIFO</strong>. Stack algorithms such as <strong>LRU</strong> and <strong>Optimal</strong> are mathematically guaranteed never to exhibit Belady's Anomaly because the set of pages in memory for $m$ frames is always a strict subset of the pages in memory for $m+1$ frames ($M(m) \subseteq M(m+1)$).
+        </p>
+
+        <!-- Anomaly Alert Banner -->
+        <div class="anomaly-alert-banner anomaly-true" id="beladyAlertBanner">
+          <i data-lucide="alert-triangle"></i>
+          <div>Click "Run Anomaly Test" to evaluate FIFO and stack algorithms on the classic Belady reference string.</div>
+        </div>
+
+        <div class="config-grid">
+          <div class="form-group">
+            <label class="form-label">Frame Count 1 (Baseline)</label>
+            <input type="number" class="form-control" id="beladyFrame1" value="3" min="1" max="16">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Frame Count 2 (Expanded)</label>
+            <input type="number" class="form-control" id="beladyFrame2" value="4" min="1" max="16">
+          </div>
+          <div class="form-group span-full">
+            <label class="form-label">Reference String (Default: Classic Belady String)</label>
+            <input type="text" class="form-control" id="beladyCustomString" value="1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5">
+          </div>
+        </div>
+      </div>
+
+      <!-- Belady Results Side-by-Side Cards -->
+      <div class="belady-compare-container">
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="alert-octagon"></i> FIFO Performance (Non-Stack)
+            </div>
+            <span class="algo-tag tag-fifo">Vulnerable to Anomaly</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="background-color: var(--bg-secondary); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Frame Count 1 (Baseline)</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: #fff;" id="beladyFifo1Val">—</div>
+            </div>
+            <div style="background-color: var(--bg-secondary); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Frame Count 2 (Expanded)</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: var(--color-error);" id="beladyFifo2Val">—</div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+              Notice how increasing from 3 to 4 frames increases FIFO page faults from <strong>9 to 10</strong> on the classic reference string.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="shield-check"></i> LRU Performance (Stack Algorithm)
+            </div>
+            <span class="algo-tag tag-lru">Mathematically Immune</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="background-color: var(--bg-secondary); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="font-size: 0.8rem; color: var(--text-muted);">LRU Frame 1 Faults</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: #fff;" id="beladyLru1Val">—</div>
+            </div>
+            <div style="background-color: var(--bg-secondary); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="font-size: 0.8rem; color: var(--text-muted);">LRU Frame 2 Faults</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: var(--color-success);" id="beladyLru2Val">—</div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+              LRU fault counts strictly decrease or remain equal when frames are increased ($10 \rightarrow 8$ faults).
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Belady Chart -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-title"><i data-lucide="bar-chart-2"></i> Fault Count Comparison: Frame 1 vs Frame 2</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="chartBeladyComparison"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: ALGORITHM LEARNING CENTER -->
+    <section class="view-section" id="view-learning">
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="book-open"></i> Operating Systems Algorithm Learning Center
+          </div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;">
+          Comprehensive educational guide for undergraduate Operating Systems students covering the theory, mechanics, mathematical properties, and real-world implementation tradeoffs of virtual memory page replacement algorithms.
+        </p>
+      </div>
+
+      <div class="learning-grid">
+        
+        <!-- FIFO Card -->
+        <div class="algo-learn-card">
+          <div class="algo-learn-header">
+            <div>
+              <h3 style="font-size: 1.2rem; font-weight: 700;">1. FIFO (First-In, First-Out)</h3>
+              <div style="color: var(--text-muted); font-size: 0.8rem;">Simplest Queue-based Page Replacement Policy</div>
+            </div>
+            <span class="algo-tag tag-fifo">FIFO</span>
+          </div>
+
+          <div class="algo-learn-body">
+            <div>
+              <div class="learn-subheading">Working Principle</div>
+              <p>Replaces the page that has resided in physical memory the longest. Maintains a FIFO queue of allocated frames. When a page fault occurs and all frames are occupied, the page at the head of the queue is evicted.</p>
+              
+              <div class="learn-subheading" style="margin-top: 14px;">Time &amp; Space Complexity</div>
+              <p><strong>Replacement Time:</strong> $O(1)$ constant time queue pop.<br>
+              <strong>Lookup Time:</strong> $O(1)$ with hash map or page table.<br>
+              <strong>Space Overhead:</strong> Low ($O(F)$ queue storage).</p>
+
+              <div class="learn-subheading" style="margin-top: 14px;">Real-World Relevance</div>
+              <p>Rarely used alone in modern operating systems due to poor performance on cyclic workloads and vulnerability to Belady's Anomaly, but widely used as a baseline benchmark.</p>
+            </div>
+
+            <div>
+              <div class="learn-subheading">Advantages &amp; Trade-offs</div>
+              <p><strong style="color: var(--color-success);">&check; Pros:</strong> Trivial to implement, negligible hardware overhead, predictable eviction order.</p>
+              <p><strong style="color: var(--color-error);">&cross; Cons:</strong> Ignores frequency and recency of accesses; frequently used pages are evicted simply because they arrived early; exhibits Belady's Anomaly.</p>
+
+              <div class="learn-subheading" style="margin-top: 14px;">Deterministic Tie-Breaker</div>
+              <p>Strict monotonically increasing arrival sequence order.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- LRU Card -->
+        <div class="algo-learn-card">
+          <div class="algo-learn-header">
+            <div>
+              <h3 style="font-size: 1.2rem; font-weight: 700;">2. LRU (Least Recently Used)</h3>
+              <div style="color: var(--text-muted); font-size: 0.8rem;">Temporal Locality Approximation Policy (Stack Algorithm)</div>
+            </div>
+            <span class="algo-tag tag-lru">LRU</span>
+          </div>
+
+          <div class="algo-learn-body">
+            <div>
+              <div class="learn-subheading">Working Principle</div>
+              <p>Evicts the page that has not been referenced for the longest duration of time. By exploiting temporal locality (recently accessed data is likely to be accessed again soon), LRU closely mimics the Optimal benchmark without requiring future knowledge.</p>
+              
+              <div class="learn-subheading" style="margin-top: 14px;">Time &amp; Space Complexity</div>
+              <p><strong>True LRU:</strong> $O(1)$ eviction and update using a doubly linked list + hash map, or hardware counter/timestamp registers per page.<br>
+              <strong>Immunity:</strong> Belady's Anomaly immune (Stack Algorithm).</p>
+
+              <div class="learn-subheading" style="margin-top: 14px;">Real-World Relevance</div>
+              <p>Core inspiration for modern multi-queue cache eviction policies (e.g., Linux page cache 2-list active/inactive LRU, Redis LRU, database buffer pools).</p>
+            </div>
+
+            <div>
+              <div class="learn-subheading">Advantages &amp; Trade-offs</div>
+              <p><strong style="color: var(--color-success);">&check; Pros:</strong> Excellent hit ratio in typical programs with locality; guaranteed immune to Belady's Anomaly.</p>
+              <p><strong style="color: var(--color-error);">&cross; Cons:</strong> Pure hardware LRU is expensive because every memory read/write must update timestamps or list pointers; vulnerable to sequential streaming scans.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Optimal Card -->
+        <div class="algo-learn-card">
+          <div class="algo-learn-header">
+            <div>
+              <h3 style="font-size: 1.2rem; font-weight: 700;">3. OPTIMAL (Belady's MIN Algorithm)</h3>
+              <div style="color: var(--text-muted); font-size: 0.8rem;">Theoretical Offline Lower Bound Benchmark</div>
+            </div>
+            <span class="algo-tag tag-opt">OPTIMAL</span>
+          </div>
+
+          <div class="algo-learn-body">
+            <div>
+              <div class="learn-subheading">Working Principle</div>
+              <p>Replaces the page whose next reference occurs farthest in the future (or never). Requires complete omniscient knowledge of the future reference string.</p>
+              
+              <div class="learn-subheading" style="margin-top: 14px;">Mathematical Optimality</div>
+              <p>Mathematically proven to produce the absolute lowest number of page faults possible for any fixed number of frames. Belongs to the stack algorithm family.</p>
+
+              <div class="learn-subheading" style="margin-top: 14px;">Theoretical Status</div>
+              <p>Cannot be implemented in real general-purpose online operating systems because future memory accesses cannot be predicted in advance. It exists solely as an ideal baseline for evaluating practical algorithms.</p>
+            </div>
+
+            <div>
+              <div class="learn-subheading">Deterministic Tie-Breaker</div>
+              <p>Pages never referenced again are prioritized for eviction. Among ties, FIFO arrival order is used.</p>
+
+              <div class="learn-subheading" style="margin-top: 14px;">Analytical Purpose</div>
+              <p>Measures how close an online heuristic (e.g. LRU or Clock) comes to the theoretical limit for a given workload trace.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- LFU Card -->
+        <div class="algo-learn-card">
+          <div class="algo-learn-header">
+            <div>
+              <h3 style="font-size: 1.2rem; font-weight: 700;">4. LFU (Least Frequently Used)</h3>
+              <div style="color: var(--text-muted); font-size: 0.8rem;">Frequency-Counting Eviction Policy</div>
+            </div>
+            <span class="algo-tag tag-lfu">LFU</span>
+          </div>
+
+          <div class="algo-learn-body">
+            <div>
+              <div class="learn-subheading">Working Principle</div>
+              <p>Tracks how many times each resident page has been accessed while in physical memory. When replacement is required, the frame with the lowest access counter is replaced.</p>
+              
+              <div class="learn-subheading" style="margin-top: 14px;">Deterministic Tie-Breaker Policy</div>
+              <p><strong>LRU Tie-Breaker:</strong> If multiple candidate frames share the identical minimum frequency counter, the page that was least recently used is evicted.</p>
+
+              <div class="learn-subheading" style="margin-top: 14px;">Cache Pollution &amp; Aging</div>
+              <p>A page heavily accessed during program startup may retain high counters and linger in memory long after it is no longer needed unless frequency aging (decay) is implemented.</p>
+            </div>
+
+            <div>
+              <div class="learn-subheading">Advantages &amp; Trade-offs</div>
+              <p><strong style="color: var(--color-success);">&check; Pros:</strong> Retains high-demand global working set pages effective in static distribution workloads.</p>
+              <p><strong style="color: var(--color-error);">&cross; Cons:</strong> Slow to adapt to phase shifts; newly referenced pages start with low counter (1) and risk immediate premature eviction.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Chance / Clock Card -->
+        <div class="algo-learn-card">
+          <div class="algo-learn-header">
+            <div>
+              <h3 style="font-size: 1.2rem; font-weight: 700;">5. Second Chance (Clock Algorithm)</h3>
+              <div style="color: var(--text-muted); font-size: 0.8rem;">Hardware-Efficient Circular LRU Approximation</div>
+            </div>
+            <span class="algo-tag tag-clock">SECOND CHANCE</span>
+          </div>
+
+          <div class="algo-learn-body">
+            <div>
+              <div class="learn-subheading">Working Principle</div>
+              <p>Arranges memory frames in a circular buffer with a scanning pointer (the "Clock Hand"). Each frame has a single 1-bit reference bit set by MMU hardware on each memory access.</p>
+              <p>When a page fault requires replacement, the clock hand advances circularly. If it encounters a frame with reference bit 1, it clears the bit to 0 ("second chance") and advances. If it encounters a frame with bit 0, that frame is evicted immediately.</p>
+              
+              <div class="learn-subheading" style="margin-top: 14px;">Real-World Relevance</div>
+              <p>Because hardware only needs to set 1 bit per page access, the Clock algorithm and its two-handed variants (e.g. BSD Clock, Linux page aging) form the practical core of production virtual memory managers.</p>
+            </div>
+
+            <div>
+              <div class="learn-subheading">Advantages &amp; Trade-offs</div>
+              <p><strong style="color: var(--color-success);">&check; Pros:</strong> Extremely fast $O(1)$ amortized replacement, negligible hardware overhead (1 bit per frame), closely approximates LRU performance.</p>
+              <p><strong style="color: var(--color-error);">&cross; Cons:</strong> In worst-case degenerate cycles with all bits 1, the hand must traverse all frames before finding a victim.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Comparative Summary Matrix Table -->
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="table"></i> Summary Comparison Matrix of All 5 Algorithms
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Eviction Basis</th>
+                <th>Time Complexity</th>
+                <th>Hardware Overhead</th>
+                <th>Belady Vulnerable?</th>
+                <th>Real-world Practicality</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>FIFO</strong></td>
+                <td>Oldest arrival time</td>
+                <td>$O(1)$</td>
+                <td>Minimal (Queue)</td>
+                <td><span style="color: var(--color-error); font-weight: 700;">YES (Vulnerable)</span></td>
+                <td>Low (Educational baseline)</td>
+              </tr>
+              <tr>
+                <td><strong>LRU</strong></td>
+                <td>Least recent access</td>
+                <td>$O(1)$ with list</td>
+                <td>High (Timestamps/Pointers)</td>
+                <td><span style="color: var(--color-success); font-weight: 700;">NO (Stack Algorithm)</span></td>
+                <td>Moderate (Approximated in practice)</td>
+              </tr>
+              <tr>
+                <td><strong>Optimal</strong></td>
+                <td>Farthest future access</td>
+                <td>$O(N \cdot F)$ offline</td>
+                <td>N/A (Requires future)</td>
+                <td><span style="color: var(--color-success); font-weight: 700;">NO (Stack Algorithm)</span></td>
+                <td>Impossible online (Theoretical benchmark)</td>
+              </tr>
+              <tr>
+                <td><strong>LFU</strong></td>
+                <td>Lowest access count</td>
+                <td>$O(\log F)$ or $O(1)$</td>
+                <td>Moderate (Counters)</td>
+                <td><span style="color: var(--color-error); font-weight: 700;">YES (Vulnerable)</span></td>
+                <td>Specialized caches (Web/CDN)</td>
+              </tr>
+              <tr>
+                <td><strong>Second Chance</strong></td>
+                <td>Circular scan &amp; reference bit</td>
+                <td>$O(1)$ amortized</td>
+                <td>Very Low (1 bit per frame)</td>
+                <td><span style="color: var(--color-error); font-weight: 700;">YES (in extreme cases)</span></td>
+                <td><span style="color: var(--color-success); font-weight: 700;">High (Industry Standard in OS)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SECTION 7: SIMULATION HISTORY -->
+    <section class="view-section" id="view-history">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="history"></i> Local Simulation History &amp; Records
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btnClearHistory" style="color: var(--color-error);">
+            <i data-lucide="trash-2"></i> Clear History
+          </button>
+        </div>
+
+        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 20px;">
+          Previous simulation experiments stored locally in your browser. Replay any simulation at any time, export records to CSV, or clear logs.
+        </p>
+
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Date &amp; Time</th>
+                <th>Algorithm</th>
+                <th>Frames</th>
+                <th>Reference String</th>
+                <th>Hits</th>
+                <th>Faults</th>
+                <th>Hit Ratio %</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Toast Notification Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Application JavaScript Modules -->
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/history.js"></script>
+<script src="js/simulation.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
